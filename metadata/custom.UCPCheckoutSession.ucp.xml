@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
+  <custom-type type-id="UCPCheckoutSession">
+    <display-name xml:lang="x-default">UCP Checkout Sessions</display-name>
+    <staging-mode>no-staging</staging-mode>
+    <storage-scope>site</storage-scope>
+    <retention-days>7</retention-days>
+    <key-definition attribute-id="checkoutID">
+      <type>string</type>
+      <min-length>0</min-length>
+    </key-definition>
+    <attribute-definitions>
+      <attribute-definition attribute-id="ucpIdempotencyRecord">
+        <type>text</type>
+        <localizable-flag>false</localizable-flag>
+        <mandatory-flag>false</mandatory-flag>
+        <externally-managed-flag>false</externally-managed-flag>
+      </attribute-definition>
+      <attribute-definition attribute-id="email">
+        <type>string</type>
+        <localizable-flag>false</localizable-flag>
+        <mandatory-flag>false</mandatory-flag>
+        <externally-managed-flag>false</externally-managed-flag>
+        <min-length>0</min-length>
+      </attribute-definition>
+      <attribute-definition attribute-id="fullName">
+        <type>string</type>
+        <localizable-flag>false</localizable-flag>
+        <mandatory-flag>false</mandatory-flag>
+        <externally-managed-flag>false</externally-managed-flag>
+        <min-length>0</min-length>
+      </attribute-definition>
+      <attribute-definition attribute-id="status">
+        <type>enum-of-string</type>
+        <localizable-flag>false</localizable-flag>
+        <mandatory-flag>false</mandatory-flag>
+        <externally-managed-flag>false</externally-managed-flag>
+        <value-definitions>
+          <value-definition>
+            <display xml:lang="x-default">Incomplete</display>
+            <value>incomplete</value>
+          </value-definition>
+          <value-definition>
+            <display xml:lang="x-default">Requires Escalation</display>
+            <value>requires_escalation</value>
+          </value-definition>
+          <value-definition>
+            <display xml:lang="x-default">Ready For Complete</display>
+            <value>ready_for_complete</value>
+          </value-definition>
+          <value-definition>
+            <display xml:lang="x-default">Complete In Progress</display>
+            <value>complete_in_progress</value>
+          </value-definition>
+          <value-definition>
+            <display xml:lang="x-default">Completed</display>
+            <value>completed</value>
+          </value-definition>
+          <value-definition>
+            <display xml:lang="x-default">Canceled</display>
+            <value>canceled</value>
+          </value-definition>
+        </value-definitions>
+      </attribute-definition>
+      <attribute-definition attribute-id="marketingConsent">
+        <type>text</type>
+        <localizable-flag>false</localizable-flag>
+        <mandatory-flag>false</mandatory-flag>
+        <externally-managed-flag>false</externally-managed-flag>
+      </attribute-definition>
+      <attribute-definition attribute-id="basketContent">
+        <type>text</type>
+        <localizable-flag>false</localizable-flag>
+        <mandatory-flag>false</mandatory-flag>
+        <externally-managed-flag>false</externally-managed-flag>
+      </attribute-definition>
+    </attribute-definitions>
+    <group-definitions>
+      <attribute-group group-id="ucp">
+        <display-name xml:lang="x-default">UCP Session</display-name>
+        <attribute attribute-id="ucpIdempotencyRecord"/>
+        <attribute attribute-id="email"/>
+        <attribute attribute-id="fullName"/>
+        <attribute attribute-id="status"/>
+        <attribute attribute-id="marketingConsent"/>
+        <attribute attribute-id="basketContent"/>
+      </attribute-group>
+    </group-definitions>
+  </custom-type>
+</metadata>
+
