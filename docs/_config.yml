@@ -1,0 +1,45 @@
+# Jekyll Configuration for UCP SFCC Documentation
+
+title: UCP SFCC Cartridge Documentation
+description: Technical documentation for the Universal Commerce Protocol (UCP) cartridge for Salesforce Commerce Cloud
+url: "sfcc.agenticstorefront.com" # Your site URL (leave empty for local development)
+baseurl: "" # Subpath of your site (leave empty if site is at root)
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Theme settings (using minimal theme approach)
+theme: null
+
+# Navigation
+navigation:
+  - title: Home
+    url: /
+  - title: SFCC Cartridge
+    url: /sfcc-cartridge.html
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+
+# Kramdown options
+kramdown:
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: 'highlight'
+    span:
+      line_numbers: false
+    block:
+      line_numbers: false
+
