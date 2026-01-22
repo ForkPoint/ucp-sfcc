@@ -1,7 +1,7 @@
 # Jekyll Configuration for UCP SFCC Documentation
 
 title: UCP SFCC Cartridge Documentation
-description: Technical documentation for the Universal Commerce Protocol (UCP) cartridge for Salesforce Commerce Cloud
+description: Complete documentation for the Universal Commerce Protocol (UCP) cartridge for Salesforce Commerce Cloud. Installation guide, API reference, and integration examples for SFCC checkout sessions and order management.
 url: "sfcc.agenticstorefront.com" # Your site URL (leave empty for local development)
 baseurl: "" # Subpath of your site (leave empty if site is at root)
 
@@ -18,9 +18,9 @@ theme: null
 
 # Navigation
 navigation:
-  - title: Home
+  - title: UCP Introduction
     url: /
-  - title: SFCC Cartridge
+  - title: 📚 SFCC Cartridge Documentation
     url: /sfcc-cartridge.html
 
 # Exclude from processing

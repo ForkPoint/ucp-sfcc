@@ -1,29 +1,13 @@
 ---
 layout: default
-title: UCP Cartridge for Salesforce Commerce Cloud
-description: Technical overview and integration guide for the Universal Commerce Protocol (UCP) cartridge for Salesforce Commerce Cloud
+title: UCP SFCC Cartridge Documentation - Installation & API Guide | Salesforce Commerce Cloud Integration
+description: Complete guide to installing and using the UCP cartridge for Salesforce Commerce Cloud. Learn how to integrate Universal Commerce Protocol with SFCC, configure checkout sessions, payment handlers, and order management.
 nav_order: 1
 ---
 
 # UCP Cartridge for Salesforce Commerce Cloud
 
 The Universal Commerce Protocol (UCP) cartridge for Salesforce Commerce Cloud (SFCC) enables standardized checkout sessions and order management through a REST API, simplifying integration between SFCC and modern commerce platforms.
-
-## Table of Contents
-
-- [Introducing the UCP Cartridge for SFCC](#introducing-the-ucp-cartridge-for-sfcc)
-- [High-Level Architecture](#high-level-architecture)
-- [Features](#features)
-- [Technical Overview](#technical-overview)
-- [API Endpoints](#api-endpoints)
-- [Configuration](#configuration)
-- [Installation](#installation)
-- [Use Cases](#use-cases)
-- [Limitations and Considerations](#limitations-and-considerations)
-- [Support and Resources](#support-and-resources)
-- [Related Documentation](#related-documentation)
-
----
 
 ## Introducing the UCP Cartridge for SFCC
 
@@ -81,11 +65,11 @@ The UCP cartridge follows a modular architecture that integrates seamlessly with
 
 ### Data Flow
 
-1. **Discovery**: UCP-compliant platforms query `/.well-known/ucp` to discover available capabilities and payment handlers
-2. **Session Creation**: Platform creates a checkout session via `POST /checkout-sessions` with line items, buyer info, and payment preferences
-3. **Session Management**: Platform can modify the session via `PUT /checkout-sessions/{session_id}` to add items, apply discounts, or select fulfillment options
-4. **Order Completion**: Platform completes the checkout via `POST /checkout-sessions/{session_id}/complete` with payment credentials
-5. **Order Processing**: SFCC creates the order and returns order details including permalink and status
+- **Discovery**: UCP-compliant platforms query `/.well-known/ucp` to discover available capabilities and payment handlers
+- **Session Creation**: Platform creates a checkout session via `POST /checkout-sessions` with line items, buyer info, and payment preferences
+- **Session Management**: Platform can modify the session via `PUT /checkout-sessions/{session_id}` to add items, apply discounts, or select fulfillment options
+- **Order Completion**: Platform completes the checkout via `POST /checkout-sessions/{session_id}/complete` with payment credentials
+- **Order Processing**: SFCC creates the order and returns order details including permalink and status
 
 ## Features
 
@@ -355,7 +339,7 @@ Supported shipping options include:
 ### Installation Steps
 
 1. **Download the Cartridge**
-   - Download the latest release from the repository
+   - Download the latest release from the [GitHub repository](https://github.com/ForkPoint/ucp-sfcc)
    - Extract the cartridge files
 
 2. **Upload to SFCC**
@@ -446,7 +430,8 @@ Enable consistent checkout experiences across multiple channels:
 
 ### Getting Help
 
-- **Issues**: Report issues via the repository issue tracker
+- **GitHub Repository**: [https://github.com/ForkPoint/ucp-sfcc](https://github.com/ForkPoint/ucp-sfcc)
+- **Issues**: Report issues via the [GitHub issue tracker](https://github.com/ForkPoint/ucp-sfcc/issues)
 - **Questions**: Contact support at ucp@forkpoint.com
 - **Community**: Join the UCP community discussions
 
