@@ -1,3 +1,11 @@
+<p align="center">
+  <a href="https://agenticstorefront.com/">
+    <picture>
+      <img alt="Animated UCP Logo" src="https://github.com/ForkPoint/ucp-sfcc/docs/logos/ucp-logo.svg">
+    </picture>
+  </a>
+</p>
+
 # UCP (Universal Commerce Protocol) Integration for SFCC
 
 This cartridge implements the UCP specification for Salesforce Commerce Cloud (SFCC), enabling standardized checkout sessions and order management through a REST API.
