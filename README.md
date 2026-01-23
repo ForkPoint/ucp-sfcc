@@ -1,7 +1,7 @@
 <p align="center">
   <a href="https://agenticstorefront.com/">
     <picture>
-      <img alt="Animated UCP Logo" src="https://github.com/ForkPoint/ucp-sfcc/docs/logos/ucp-logo.svg">
+      <img alt="UCP Logo" src="https://raw.githubusercontent.com/ForkPoint/ucp-sfcc/refs/heads/main/docs/logos/ucp-logo.svg">
     </picture>
   </a>
 </p>
