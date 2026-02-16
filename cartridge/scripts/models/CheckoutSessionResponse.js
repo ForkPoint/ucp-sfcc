@@ -586,16 +586,16 @@ function CheckoutSessionResponseModel(sessionID, lineItemContainer, status, requ
     this.links = this.links.concat(ucpHelpers.getBuyerConsentLinks());
   }
 
-  if (capabilities.includes('discount')) {
-    this.discounts = getDiscounts(lineItemContainer);
-  }
-
   this.buyer = getBuyerInfo(buyer || {}, lineItemContainer || {});
 
-  if (lineItemContainer !== null) {
+  if (lineItemContainer) {
     this.id = sessionID;
     this.line_items = mapLineItems(lineItemContainer);
     this.currency = lineItemContainer.currencyCode;
+
+    if (capabilities.includes('discount')) {
+        this.discounts = getDiscounts(lineItemContainer);
+    }
 
     // Only include fulfillment if request asked for it or has fulfillment data
     var fulfillment = null;
