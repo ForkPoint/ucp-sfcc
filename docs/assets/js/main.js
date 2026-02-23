@@ -136,15 +136,74 @@
         sections.forEach(section => observer.observe(section));
     };
 
-    // Initialize on DOM ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            generateTOC();
-            updateActiveTOC();
+    // Mobile hamburger menu toggle
+    const initMobileMenu = () => {
+        const menuToggle = document.querySelector('.menu-toggle');
+        const siteNav = document.querySelector('.site-nav');
+        if (!menuToggle || !siteNav) return;
+
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = siteNav.classList.toggle('open');
+            menuToggle.classList.toggle('open', isOpen);
+            menuToggle.setAttribute('aria-expanded', isOpen);
         });
-    } else {
+
+        // Close menu when clicking a nav link
+        siteNav.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                siteNav.classList.remove('open');
+                menuToggle.classList.remove('open');
+                menuToggle.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!siteNav.contains(e.target) && !menuToggle.contains(e.target)) {
+                siteNav.classList.remove('open');
+                menuToggle.classList.remove('open');
+                menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    };
+
+    // Mobile TOC toggle
+    const initTocToggle = () => {
+        const tocToggle = document.getElementById('toc-toggle');
+        const tocSidebar = document.getElementById('toc-sidebar');
+        if (!tocToggle || !tocSidebar) return;
+
+        tocToggle.addEventListener('click', () => {
+            const isOpen = tocSidebar.classList.toggle('open');
+            tocToggle.classList.toggle('open', isOpen);
+            tocToggle.setAttribute('aria-expanded', isOpen);
+        });
+
+        // Close TOC when clicking a TOC link on mobile
+        tocSidebar.querySelectorAll('.toc-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    tocSidebar.classList.remove('open');
+                    tocToggle.classList.remove('open');
+                    tocToggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+        });
+    };
+
+    // Initialize on DOM ready
+    const init = () => {
         generateTOC();
         updateActiveTOC();
+        initMobileMenu();
+        initTocToggle();
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
     }
 })();
 
