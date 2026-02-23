@@ -284,10 +284,17 @@ function handleCompleteOrderRequest(req, res, next) {
     const basket = BasketMgr.createTemporaryBasket();
     ucpHelpers.populateBasketFromUCPBasket(basket, result.ucpBasket);
 
+    // Extract selected payment instrument from UCP payment.instruments
+    var paymentData = null;
+    if (requestBody.payment && requestBody.payment.instruments && requestBody.payment.instruments.length > 0) {
+      paymentData = requestBody.payment.instruments.find(function (inst) { return inst.selected === true; })
+        || requestBody.payment.instruments[0];
+    }
+
     // Process payment data if provided
-    if (basket && requestBody.payment_data) {
+    if (basket && paymentData) {
       Transaction.wrap(function () {
-        ucpHelpers.processPaymentInstrument(basket, requestBody.payment_data);
+        ucpHelpers.processPaymentInstrument(basket, paymentData);
 
         ucpHelpers.ensureNoEmptyShipments(req, basket);
         cartHelpers.ensureAllShipmentsHaveMethods(basket);

@@ -96,18 +96,22 @@ function getBuyerInfo(buyer, lineItemContainer) {
  * Get basket totals
  * @param {dw.order.LineItemCtnr} lineItemContainer - SFCC basket or order
  * @param {boolean} requestedFulfillment - Whether fulfillment was requested in the request
+ * @param {string} fulfillmentType - Fulfillment type ('shipping' or 'pickup')
  * @returns {Array} - Array of total objects
  */
-function getBasketTotals(lineItemContainer, requestedFulfillment) {
+function getBasketTotals(lineItemContainer, requestedFulfillment, fulfillmentType) {
   const totals = [];
   const subtotal = moneyToCents(lineItemContainer.merchandizeTotalNetPrice);
-  const fulfillment = moneyToCents(lineItemContainer.shippingTotalNetPrice);
+  const isPickup = fulfillmentType === 'pickup';
+  const fulfillment = isPickup ? 0 : moneyToCents(lineItemContainer.shippingTotalNetPrice);
   const discount = moneyToCents(lineItemContainer.merchandizeTotalPrice.subtract(lineItemContainer.adjustedMerchandizeTotalPrice));
   const tax = moneyToCents(lineItemContainer.totalTax);
 
   let total;
 
-  if (requestedFulfillment) {
+  if (isPickup) {
+    total = subtotal + tax - discount;
+  } else if (requestedFulfillment) {
     total = moneyToCents(lineItemContainer.totalGrossPrice);
   } else {
     total = moneyToCents(lineItemContainer.adjustedMerchandizeTotalPrice);
@@ -119,8 +123,8 @@ function getBasketTotals(lineItemContainer, requestedFulfillment) {
     amount: subtotal
   });
 
-  // Only include fulfillment if > 0 or if a shipping method is selected
-  if (requestedFulfillment && (fulfillment > 0 || (lineItemContainer.defaultShipment && lineItemContainer.defaultShipment.shippingMethod) )) {
+  // Only include fulfillment for shipping (not pickup), and if > 0 or if a shipping method is selected
+  if (!isPickup && requestedFulfillment && (fulfillment > 0 || (lineItemContainer.defaultShipment && lineItemContainer.defaultShipment.shippingMethod) )) {
     totals.push({
       type: 'fulfillment',
       amount: fulfillment
@@ -334,11 +338,18 @@ function getShippingOptions(shipment, lineItemContainer) {
 function getFulfillment(lineItemContainer, requestFulfillment) {
   var methods = [];
   var ucpHelpers = require('*/cartridge/scripts/helpers/ucpHelpers');
+  var StoreMgr = require('dw/catalog/StoreMgr');
 
   // Return empty object if no shipments
   if (!lineItemContainer.shipments || lineItemContainer.shipments.length === 0) {
     return {};
   }
+
+  // Determine the request method type (shipping or pickup)
+  var requestMethod = requestFulfillment && requestFulfillment.methods && requestFulfillment.methods.length > 0
+    ? requestFulfillment.methods[0]
+    : null;
+  var requestType = requestMethod ? requestMethod.type : 'shipping';
 
   collections.forEach(lineItemContainer.shipments, function (shipment) {
     // Get all line item IDs for this shipment
@@ -352,17 +363,55 @@ function getFulfillment(lineItemContainer, requestFulfillment) {
       return;
     }
 
-    // Determine what stage of fulfillment we're in based on request
-    var requestMethod = requestFulfillment && requestFulfillment.methods && requestFulfillment.methods.length > 0
-      ? requestFulfillment.methods[0]
-      : null;
-
     var hasRequestDestinations = requestMethod && requestMethod.destinations && requestMethod.destinations.length > 0;
     var hasRequestSelectedDestination = requestMethod && requestMethod.selected_destination_id;
     var hasRequestSelectedOption = requestMethod && requestMethod.groups && requestMethod.groups.length > 0
       && requestMethod.groups[0].selected_option_id;
 
-    // Get destinations
+    // Handle pickup fulfillment (store destinations)
+    if (requestType === 'pickup') {
+      var storeDestinations = ucpHelpers.getFulfillmentAddresses();
+      var method = {
+        id: shipment.UUID || UUIDUtils.createUUID(),
+        type: 'pickup',
+        line_item_ids: shipmentLineItemIds
+      };
+
+      if (storeDestinations.length > 0) {
+        method.destinations = storeDestinations;
+      }
+
+      // If a store is selected, show pickup option
+      if (hasRequestSelectedDestination) {
+        var store = StoreMgr.getStore(requestMethod.selected_destination_id);
+        if (store) {
+          method.selected_destination_id = requestMethod.selected_destination_id;
+
+          var pickupGroup = {
+            id: 'group_pickup_' + (shipment.UUID || UUIDUtils.createUUID()),
+            line_item_ids: shipmentLineItemIds,
+            options: [
+              {
+                id: 'store_pickup',
+                title: 'In-Store Pickup',
+                totals: [
+                  { type: 'subtotal', amount: 0 },
+                  { type: 'total', amount: 0 }
+                ]
+              }
+            ],
+            selected_option_id: 'store_pickup'
+          };
+
+          method.groups = [pickupGroup];
+        }
+      }
+
+      methods.push(method);
+      return;
+    }
+
+    // Handle shipping fulfillment (regular addresses)
     var allDestinations = [];
 
     // If agent provided destinations in request, use those (they are the shipping addresses)
@@ -404,7 +453,7 @@ function getFulfillment(lineItemContainer, requestFulfillment) {
     }
 
     // Build the fulfillment method
-    var method = {
+    var shippingMethod = {
       id: shipment.UUID || UUIDUtils.createUUID(),
       type: 'shipping',
       line_item_ids: shipmentLineItemIds
@@ -412,14 +461,14 @@ function getFulfillment(lineItemContainer, requestFulfillment) {
 
     // Always include destinations if we have any
     if (allDestinations.length > 0) {
-      method.destinations = allDestinations;
+      shippingMethod.destinations = allDestinations;
     }
 
     // Progressive disclosure: only add selected_destination_id and groups if destination is selected
     var shouldShowGroups = selectedDestinationId || hasRequestDestinations || hasRequestSelectedDestination;
 
     if (shouldShowGroups && selectedDestinationId) {
-      method.selected_destination_id = selectedDestinationId;
+      shippingMethod.selected_destination_id = selectedDestinationId;
 
       // Get all applicable shipping options
       var options = getShippingOptions(shipment, lineItemContainer);
@@ -449,11 +498,11 @@ function getFulfillment(lineItemContainer, requestFulfillment) {
           group.selected_option_id = selectedOptionId;
         }
 
-        method.groups = [group];
+        shippingMethod.groups = [group];
       }
     }
 
-    methods.push(method);
+    methods.push(shippingMethod);
   });
 
   // Only return fulfillment object if we have methods
@@ -599,9 +648,13 @@ function CheckoutSessionResponseModel(sessionID, lineItemContainer, status, requ
 
     // Only include fulfillment if request asked for it or has fulfillment data
     var fulfillment = null;
-    var requestedFulfillment = requestFulfillment && requestFulfillment.methods && requestFulfillment.methods.length > 0;
+    const requestedFulfillment = (requestFulfillment && requestFulfillment.methods && requestFulfillment.methods.length > 0)
+      || status === 'completed';
+    const fulfillmentType = requestFulfillment && requestFulfillment.methods && requestFulfillment.methods.length > 0
+      ? requestFulfillment.methods[0].type
+      : 'shipping';
 
-    this.totals = getBasketTotals(lineItemContainer, requestedFulfillment);
+    this.totals = getBasketTotals(lineItemContainer, requestedFulfillment, fulfillmentType);
 
     if (capabilities.includes('fulfillment') && requestedFulfillment) {
       fulfillment = getFulfillment(lineItemContainer, requestFulfillment);
@@ -611,7 +664,7 @@ function CheckoutSessionResponseModel(sessionID, lineItemContainer, status, requ
     }
 
     // Determine status and messages based on fulfillment completeness
-    var statusAndMessages = determineStatusAndMessages(lineItemContainer, fulfillment, status);
+    const statusAndMessages = determineStatusAndMessages(lineItemContainer, fulfillment, status);
     this.status = statusAndMessages.status;
 
     // Only include messages array if there are messages
@@ -624,7 +677,6 @@ function CheckoutSessionResponseModel(sessionID, lineItemContainer, status, requ
       if (lineItemContainer instanceof Order) {
         this.order = {
           id: lineItemContainer.orderNo,
-          // TODO: CSFR Token problem
           permalink_url: URLUtils.https(
             'Order-Track',
             'trackOrderNumber', lineItemContainer.orderNo,
