@@ -24,44 +24,103 @@ The cartridge enables:
 
 The UCP cartridge follows a modular architecture that integrates seamlessly with SFCC's existing infrastructure:
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    UCP-Compliant Platform                    │
-│                  (Collector/Commerce App)                    │
-└───────────────────────┬─────────────────────────────────────┘
-                        │
-                        │ REST API (UCP Protocol)
-                        │
-┌───────────────────────▼─────────────────────────────────────┐
-│              SFCC Storefront (Cartridge)                     │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │  Controller Layer (RedirectURL.js)                   │   │
-│  │  - Routes UCP requests                               │   │
-│  │  - Handles HTTP methods (GET, POST, PUT)             │   │
-│  └───────────────────┬──────────────────────────────────┘   │
-│                      │                                        │
-│  ┌───────────────────▼──────────────────────────────────┐   │
-│  │  Middleware Layer (ucp.js)                            │   │
-│  │  - Discovery endpoint handler                         │   │
-│  │  - Checkout session management                        │   │
-│  │  - Order completion                                   │   │
-│  └───────────────────┬──────────────────────────────────┘   │
-│                      │                                        │
-│  ┌───────────────────▼──────────────────────────────────┐   │
-│  │  Helper Layer (ucpHelpers.js)                        │   │
-│  │  - Request validation                                │   │
-│  │  - Basket management                                 │   │
-│  │  - Configuration management                          │   │
-│  └───────────────────┬──────────────────────────────────┘   │
-│                      │                                        │
-│  ┌───────────────────▼──────────────────────────────────┐   │
-│  │  SFCC Core Services                                  │   │
-│  │  - BasketMgr (Shopping cart)                          │   │
-│  │  - OrderMgr (Order creation)                          │   │
-│  │  - CustomObjectMgr (Session storage)                  │   │
-│  └──────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-```
+<div class="arch-diagram">
+  <div class="arch-node arch-platform" style="animation-delay: 0s;">
+    <div class="arch-node-title">UCP-Compliant Platform</div>
+    <div class="arch-node-subtitle">(Collector / Commerce App)</div>
+  </div>
+
+  <div class="arch-arrow" style="animation-delay: 0.15s;">
+    <div class="arch-arrow-line"></div>
+    <div class="arch-arrow-label">REST API (UCP Protocol)</div>
+    <div class="arch-arrow-line"></div>
+    <div class="arch-arrow-head"></div>
+  </div>
+
+  <div class="arch-storefront-wrapper" style="animation-delay: 0.3s;">
+    <div class="arch-storefront-header">SFCC Storefront (Cartridge)</div>
+    <div class="arch-storefront-body">
+
+      <div class="arch-card" style="animation-delay: 0.5s;">
+        <div class="arch-step-badge">1</div>
+        <div class="arch-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="arch-card-content">
+          <div class="arch-card-title">Controller Layer</div>
+          <div class="arch-card-file">RedirectURL.js</div>
+          <ul class="arch-card-list">
+            <li>Routes UCP requests</li>
+            <li>Handles HTTP methods (GET, POST, PUT)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="arch-arrow arch-arrow-short" style="animation-delay: 0.65s;">
+        <div class="arch-arrow-line"></div>
+        <div class="arch-arrow-head"></div>
+      </div>
+
+      <div class="arch-card" style="animation-delay: 0.8s;">
+        <div class="arch-step-badge">2</div>
+        <div class="arch-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div class="arch-card-content">
+          <div class="arch-card-title">Middleware Layer</div>
+          <div class="arch-card-file">ucp.js</div>
+          <ul class="arch-card-list">
+            <li>Discovery endpoint handler</li>
+            <li>Checkout session management</li>
+            <li>Order completion</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="arch-arrow arch-arrow-short" style="animation-delay: 0.95s;">
+        <div class="arch-arrow-line"></div>
+        <div class="arch-arrow-head"></div>
+      </div>
+
+      <div class="arch-card" style="animation-delay: 1.1s;">
+        <div class="arch-step-badge">3</div>
+        <div class="arch-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        </div>
+        <div class="arch-card-content">
+          <div class="arch-card-title">Helper Layer</div>
+          <div class="arch-card-file">ucpHelpers.js</div>
+          <ul class="arch-card-list">
+            <li>Request validation</li>
+            <li>Basket management</li>
+            <li>Configuration management</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="arch-arrow arch-arrow-short" style="animation-delay: 1.25s;">
+        <div class="arch-arrow-line"></div>
+        <div class="arch-arrow-head"></div>
+      </div>
+
+      <div class="arch-card" style="animation-delay: 1.4s;">
+        <div class="arch-step-badge">4</div>
+        <div class="arch-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        </div>
+        <div class="arch-card-content">
+          <div class="arch-card-title">SFCC Core Services</div>
+          <ul class="arch-card-list">
+            <li>BasketMgr (Shopping cart)</li>
+            <li>OrderMgr (Order creation)</li>
+            <li>CustomObjectMgr (Session storage)</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 ### Data Flow
 

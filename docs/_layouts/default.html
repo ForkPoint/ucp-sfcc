@@ -23,6 +23,11 @@
                     <a href="{{ '/' | relative_url }}" class="site-title">
                         <h1>{{ site.title }}</h1>
                     </a>
+                    <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">
+                        <span class="menu-toggle-bar"></span>
+                        <span class="menu-toggle-bar"></span>
+                        <span class="menu-toggle-bar"></span>
+                    </button>
                     <nav class="site-nav">
                         <ul>
                             {% for item in site.navigation %}
@@ -42,6 +47,10 @@
         <main class="site-main">
             <div class="main-container">
                 <aside class="toc-sidebar" id="toc-sidebar">
+                    <button class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents" aria-expanded="false">
+                        <span class="toc-toggle-text">Table of Contents</span>
+                        <span class="toc-toggle-icon">▼</span>
+                    </button>
                     <nav class="toc-nav" id="toc-nav">
                         <h3 class="toc-title">Table of Contents</h3>
                         <ul class="toc-list" id="toc-list"></ul>
