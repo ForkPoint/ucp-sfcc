@@ -216,16 +216,16 @@ function getIdempotencyRecord(checkoutID, idempotencyKey) {
   if (!checkoutID || !idempotencyKey) return null;
 
   try {
-    var ucpSession = CustomObjectMgr.getCustomObject('UCPCheckoutSession', checkoutID);
+    const ucpSession = CustomObjectMgr.getCustomObject('UCPCheckoutSession', checkoutID);
 
     if (!ucpSession || !ucpSession.custom.ucpIdempotencyRecord) return null;
 
-    var recordsJson = String(ucpSession.custom.ucpIdempotencyRecord);
-    var records = JSON.parse(recordsJson);
+    const recordsJson = String(ucpSession.custom.ucpIdempotencyRecord);
+    const records = JSON.parse(recordsJson);
 
     if (!records || typeof records !== 'object') return null;
 
-    var record = records[idempotencyKey];
+    const record = records[idempotencyKey];
     if (!record) return null;
 
     return {
@@ -235,7 +235,7 @@ function getIdempotencyRecord(checkoutID, idempotencyKey) {
       responseBody: record.responseBody
     };
   } catch (e) {
-    var errorMessage = e instanceof Error ? e.message : String(e);
+    const errorMessage = e instanceof Error ? e.message : String(e);
     logger.error('Error getting idempotency record: {0}', errorMessage);
     return null;
   }
@@ -275,7 +275,7 @@ function saveIdempotencyRecord(checkoutID, idempotencyKey, requestHash, response
     }
 
     // Get existing records or initialize empty object
-    var records = {};
+    let records = {};
     if (ucpSession.custom.ucpIdempotencyRecord) {
       try {
         records = JSON.parse(String(ucpSession.custom.ucpIdempotencyRecord));
@@ -366,7 +366,7 @@ function validateRequest(req, res, requestBody) {
     externalProfile = getExternalCustomerProfile(requestBody.buyer);
   } else if (ucpSession && ucpSession.custom.email) {
     // Get buyer from session email
-    var buyer = {
+    const buyer = {
       email: String(ucpSession.custom.email),
       full_name: String(ucpSession.custom.fullName),
       marketing_consent: JSON.parse(ucpSession.custom.marketingConsent || '{}')
@@ -450,7 +450,7 @@ function validateCompleteOrderRequest(req, res, requestBody) {
     );
   });
 
-  var riskSignals = requestBody.risk_signals || {};
+  const riskSignals = requestBody.risk_signals || {};
   logger.info('Checkout Started: email: {0}, risk_signals: {1}', ucpSession.custom.email, JSON.stringify(riskSignals));
 
   return {
@@ -496,12 +496,12 @@ function computeHash(data) {
   const Encoding = require('dw/crypto/Encoding');
 
   // Replacer function to sort object keys
-  var replacer = function (key, value) {
+  const replacer = function (key, value) {
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      var sorted = {};
-      var keys = Object.keys(value).sort();
-      for (var i = 0; i < keys.length; i++) {
-        var k = keys[i];
+      const sorted = {};
+      const keys = Object.keys(value).sort();
+      for (let i = 0; i < keys.length; i++) {
+        let k = keys[i];
         sorted[k] = value[k];
       }
       return sorted;
@@ -509,9 +509,9 @@ function computeHash(data) {
     return value;
   };
 
-  var jsonString = JSON.stringify(data, replacer);
-  var digest = new MessageDigest(MessageDigest.DIGEST_SHA_256);
-  var hash = digest.digestBytes(new dw.util.Bytes(jsonString, 'UTF-8'));
+  const jsonString = JSON.stringify(data, replacer);
+  const digest = new MessageDigest(MessageDigest.DIGEST_SHA_256);
+  const hash = digest.digestBytes(new dw.util.Bytes(jsonString, 'UTF-8'));
 
   return Encoding.toHex(hash);
 }
@@ -537,23 +537,23 @@ function encodeToken(token) {
 
     // Ensure key is 16, 24, or 32 bytes for AES
     // Pad or truncate the key to 32 bytes (256-bit AES)
-    var keyString = encryptionKey.toString();
+    let keyString = encryptionKey.toString();
     while (keyString.length < 32) {
       keyString += keyString;
     }
     keyString = keyString.substring(0, 32);
 
     // Create cipher with AES/CBC/PKCS5Padding
-    var cipher = new Cipher();
+    const cipher = new Cipher();
 
     // Encrypt the token - encrypt expects strings, not Bytes
-    var encryptedString = cipher.encrypt(token, keyString, 'AES/CBC/PKCS5Padding', null, 0);
+    const encryptedString = cipher.encrypt(token, keyString, 'AES/CBC/PKCS5Padding', null, 0);
 
     // Encode to Base64 for safe transport
-    var encryptedBytes = new Bytes(encryptedString, 'UTF-8');
+    const encryptedBytes = new Bytes(encryptedString, 'UTF-8');
     return Encoding.toBase64(encryptedBytes);
   } catch (e) {
-    var errorMessage = e instanceof Error ? e.message : String(e);
+    const errorMessage = e instanceof Error ? e.message : String(e);
     logger.error('Error encoding token: {0}', errorMessage);
     return '';
   }
@@ -577,25 +577,25 @@ function decodeToken(encodedToken) {
 
   try {
     // Pad or truncate encryption key to 32 bytes (as in encodeToken)
-    var keyString = encryptionKey.toString();
+    let keyString = encryptionKey.toString();
     while (keyString.length < 32) {
       keyString += keyString;
     }
     keyString = keyString.substring(0, 32);
 
     // Base64 decode the input to get bytes (reverse of Encoding.toBase64)
-    var encryptedBytes = Encoding.fromBase64(encodedToken);
+    const encryptedBytes = Encoding.fromBase64(encodedToken);
 
     // Convert bytes to string (in encode, we went from string to Bytes with UTF-8)
-    var encryptedString = encryptedBytes instanceof Bytes ? encryptedBytes.toString('UTF-8') : String(encryptedBytes);
+    const encryptedString = encryptedBytes instanceof Bytes ? encryptedBytes.toString('UTF-8') : String(encryptedBytes);
 
     // Decrypt the string, using same params as encodeToken
-    var cipher = new Cipher();
-    var decryptedString = cipher.decrypt(encryptedString, keyString, 'AES/CBC/PKCS5Padding', null, 0);
+    const cipher = new Cipher();
+    const decryptedString = cipher.decrypt(encryptedString, keyString, 'AES/CBC/PKCS5Padding', null, 0);
 
     return decryptedString;
   } catch (e) {
-    var errorMessage = e instanceof Error ? e.message : String(e);
+    const errorMessage = e instanceof Error ? e.message : String(e);
     logger.error('Error decoding token: {0}', errorMessage);
     return '';
   }
@@ -613,25 +613,25 @@ function parseAgentProfile(ucpAgentHeader) {
   if (!ucpAgentHeader) return null;
 
   // Extract profile URI from header
-  var match = ucpAgentHeader.match(/profile="([^"]+)"/);
+  const match = ucpAgentHeader.match(/profile="([^"]+)"/);
   if (!match) return null;
 
-  var profileUri = match[1];
-  var profileData = null;
+  const profileUri = match[1];
+  let profileData = null;
 
   try {
     // Handle data: URI
     if (profileUri.indexOf('data:') === 0) {
-      var parts = profileUri.split(',');
+      const parts = profileUri.split(',');
       if (parts.length > 1) {
-        var base64Data = parts[1];
-        var jsonStr = Encoding.fromBase64(base64Data).toString('UTF-8');
+        const base64Data = parts[1];
+        const jsonStr = Encoding.fromBase64(base64Data).toString('UTF-8');
         profileData = JSON.parse(jsonStr);
       }
     }
     // Handle HTTP/HTTPS URI
     else if (profileUri.indexOf('http') === 0) {
-      var httpClient = new HTTPClient();
+      const httpClient = new HTTPClient();
       httpClient.setTimeout(5000); // 5 second timeout
       httpClient.open('GET', profileUri);
       httpClient.send();
@@ -643,9 +643,9 @@ function parseAgentProfile(ucpAgentHeader) {
 
     // Extract webhook_url from capabilities
     if (profileData && profileData.ucp && profileData.ucp.capabilities) {
-      var capabilities = profileData.ucp.capabilities;
-      for (var i = 0; i < capabilities.length; i++) {
-        var capability = capabilities[i];
+      const capabilities = profileData.ucp.capabilities;
+      for (let i = 0; i < capabilities.length; i++) {
+        let capability = capabilities[i];
         if (capability.name === 'dev.ucp.shopping.order' &&
           capability.config &&
           capability.config.webhook_url) {
@@ -654,7 +654,7 @@ function parseAgentProfile(ucpAgentHeader) {
       }
     }
   } catch (e) {
-    var errorMessage = e instanceof Error ? e.message : String(e);
+    const errorMessage = e instanceof Error ? e.message : String(e);
     logger.warn('Failed to fetch or parse agent profile: {0}', errorMessage);
   }
 
@@ -697,7 +697,7 @@ function applyDiscountCodes(basket, codes) {
         try {
           basket.createCouponLineItem(code, true);
         } catch (e) {
-          var errorMessage = e instanceof Error ? e.message : String(e);
+          let errorMessage = e instanceof Error ? e.message : String(e);
           logger.warn('Failed to apply coupon code {0}: {1}', code, errorMessage);
         }
     });
@@ -717,7 +717,7 @@ function assignDestinationIds(destinations) {
     if (dest.id) return dest;
 
     // Assign a new ID based on address type or index
-    var idPrefix = 'dest';
+    let idPrefix = 'dest';
     if (dest.street_address) {
       // Try to create a meaningful ID
       if (dest.street_address.toLowerCase().indexOf('main') !== -1) {
@@ -782,7 +782,7 @@ function getFulfillmentAddresses() {
     const stores = SystemObjectMgr.querySystemObjects('Store', '', 'name ASC');
 
     while (stores.hasNext()) {
-      const store = stores.next();
+      let store = stores.next();
 
       // Only include stores that have addresses
       if (store.address1 || store.city || store.postalCode) {
@@ -801,7 +801,7 @@ function getFulfillmentAddresses() {
 
     stores.close();
   } catch (e) {
-    var errorMessage = e instanceof Error ? e.message : String(e);
+    const errorMessage = e instanceof Error ? e.message : String(e);
     logger.error('Error getting fulfillment addresses from stores: {0}', errorMessage);
   }
 
@@ -845,6 +845,69 @@ function applyDestinationToShipment(shipment, destination) {
 }
 
 /**
+ * Apply store pickup configuration to a shipment.
+ *
+ * This method is called when a customer selects in-store pickup (BOPIS).
+ * It sets the store address on the shipment and uses
+ * ShippingMgr.getApplicableShippingMethods() to find the correct
+ * pickup shipping method for the store's address.
+ *
+ * ===== OVERRIDE THIS METHOD =====
+ *
+ * @param {dw.order.Basket} basket - The basket to update
+ * @param {dw.order.Shipment} shipment - The shipment to configure for pickup
+ * @param {dw.catalog.Store} store - The selected store
+ */
+function applyStorePickupToShipment(basket, shipment, store) {
+  const Transaction = require('dw/system/Transaction');
+  const ShippingMgr = require('dw/order/ShippingMgr');
+
+  logger.error('[NOT CONFIGURED] The applyStorePickupToShipment method must be manually updated to work properly for your project!');
+
+  const IN_STORE_PICKUP_METHOD_ID = '005';
+
+  // Apply the store address to the shipment so applicable methods are resolved correctly
+  applyDestinationToShipment(shipment, {
+    street_address: store.address1,
+    city: store.city,
+    region: store.stateCode,
+    postal_code: store.postalCode,
+    address_country: store.countryCode
+  });
+
+  const storeAddress = {
+    address1: store.address1 || '',
+    city: store.city || '',
+    stateCode: store.stateCode || '',
+    postalCode: store.postalCode || '',
+    countryCode: store.countryCode ? store.countryCode.value : 'US'
+  };
+
+  Transaction.wrap(function () {
+    const shipmentModel = ShippingMgr.getShipmentShippingModel(shipment);
+    const applicableMethods = shipmentModel.getApplicableShippingMethods(storeAddress);
+
+    let pickupMethod = null;
+    const methodsIterator = applicableMethods.iterator();
+
+    while (methodsIterator.hasNext()) {
+      let method = methodsIterator.next();
+
+      if (method.ID === IN_STORE_PICKUP_METHOD_ID) {
+        pickupMethod = method;
+        break;
+      }
+    }
+
+    if (pickupMethod) {
+      shipment.setShippingMethod(pickupMethod);
+    } else {
+      logger.warn('No store pickup shipping method found among applicable methods for store: {0}. Ensure a shipping method for store pickup is configured.', store.ID);
+    }
+  });
+}
+
+/**
  * Update fulfillment (shipping) information
  * @param {dw.order.Basket} basket - The basket to update
  * @param {Object} fulfillment - Fulfillment object from UCP request
@@ -858,13 +921,28 @@ function updateFulfillment(basket, fulfillment) {
   if (!methods || methods.length === 0) return;
 
   methods.forEach(function (method) {
-    if (method.type === 'shipping') {
-      const shipment = basket.defaultShipment;
+    if (method.type === 'pickup') {
+      // Store pickup — validate that the selected destination is a real store
+      if (method.selected_destination_id) {
+        let StoreMgr = require('dw/catalog/StoreMgr');
+        let store = StoreMgr.getStore(method.selected_destination_id);
+
+        if (store) {
+          let shipment = basket.defaultShipment;
+          applyStorePickupToShipment(basket, shipment, store);
+
+          Transaction.wrap(function () {
+            basket.custom.ucpSelectedDestinationId = method.selected_destination_id;
+          });
+        }
+      }
+    } else if (method.type === 'shipping') {
+      let shipment = basket.defaultShipment;
 
       // Handle destination - agent provides destinations in request
       if ((method.destinations && method.destinations.length > 0) || !!method.selected_destination_id) {
         // Assign IDs to destinations for use in response
-        const destinationsWithIds = assignDestinationIds(method.destinations);
+        let destinationsWithIds = assignDestinationIds(method.destinations);
 
         // Determine which destination to apply to the shipment
         let destinationToApply = null;
@@ -1014,7 +1092,7 @@ function processPaymentInstrument(basket, paymentData) {
       paymentInstrument.setCreditCardExpirationYear(credential.expiry_year);
       paymentInstrument.setCreditCardIssueNumber(credential.cvc);
       paymentInstrument.setCreditCardType(paymentData.brand);
-      // paymentInstrument.setCreditCardHolder();
+      paymentInstrument.setCreditCardHolder(credential.name || paymentData.billing_address && (paymentData.billing_address.first_name + ' ' + paymentData.billing_address.last_name) || '');
     }
 
     // Update billing address from payment data
@@ -1076,9 +1154,9 @@ function ensureNoEmptyShipments(req, currentBasket) {
   const AddressModel = require('*/cartridge/models/address');
 
   Transaction.wrap(function () {
-    var iter = currentBasket.shipments.iterator();
-    var shipment;
-    var shipmentsToDelete = [];
+    const iter = currentBasket.shipments.iterator();
+    const shipmentsToDelete = [];
+    let shipment;
 
     while (iter.hasNext()) {
       shipment = iter.next();
@@ -1086,11 +1164,11 @@ function ensureNoEmptyShipments(req, currentBasket) {
         if (shipment.default) {
           // Cant delete the defaultShipment
           // Copy all line items from 2nd to first
-          var altShipment = checkoutHelpers.getFirstNonDefaultShipmentWithProductLineItems(currentBasket);
+          let altShipment = checkoutHelpers.getFirstNonDefaultShipmentWithProductLineItems(currentBasket);
           if (!altShipment) return;
 
           // Move the valid marker with the shipment
-          var altValid = req.session.privacyCache.get(altShipment.UUID);
+          let altValid = req.session.privacyCache.get(altShipment.UUID);
           req.session.privacyCache.set(currentBasket.defaultShipment.UUID, altValid);
 
           collections.forEach(altShipment.productLineItems,
@@ -1100,7 +1178,7 @@ function ensureNoEmptyShipments(req, currentBasket) {
 
           if (altShipment.shippingAddress) {
             // Copy from other address
-            var addressModel = new AddressModel(altShipment.shippingAddress);
+            let addressModel = new AddressModel(altShipment.shippingAddress);
             checkoutHelpers.copyShippingAddressToShipment(addressModel, currentBasket.defaultShipment);
           } else {
             // Or clear it out
@@ -1121,7 +1199,7 @@ function ensureNoEmptyShipments(req, currentBasket) {
       }
     }
 
-    for (var j = 0, jj = shipmentsToDelete.length; j < jj; j++) {
+    for (let j = 0, jj = shipmentsToDelete.length; j < jj; j++) {
       currentBasket.removeShipment(shipmentsToDelete[j]);
     }
   });
@@ -1151,8 +1229,8 @@ function populateBasketFromUCPBasket(basket, ucpBasket) {
   Transaction.wrap(function () {
     // Set currency
     if (ucpBasket.currency) {
-      var Currency = require('dw/util/Currency');
-      var currency = Currency.getCurrency(ucpBasket.currency);
+      const Currency = require('dw/util/Currency');
+      const currency = Currency.getCurrency(ucpBasket.currency);
       if (currency) {
         session.setCurrency(currency);
         basket.updateCurrency();
@@ -1166,9 +1244,9 @@ function populateBasketFromUCPBasket(basket, ucpBasket) {
     if (ucpBasket.line_items && ucpBasket.line_items.length > 0) {
       ucpBasket.line_items.forEach(function (ucpLineItem) {
         if (ucpLineItem.item && ucpLineItem.item.id) {
-          var product = ProductMgr.getProduct(ucpLineItem.item.id);
+          const product = ProductMgr.getProduct(ucpLineItem.item.id);
           if (product) {
-            var quantity = ucpLineItem.quantity || 1;
+            const quantity = ucpLineItem.quantity || 1;
             cartHelpers.addProductToCart(basket, product.ID, quantity, [], []);
           } else {
             logger.warn('Product not found: {0}', ucpLineItem.item.id);
@@ -1188,11 +1266,11 @@ function populateBasketFromUCPBasket(basket, ucpBasket) {
         basket.createBillingAddress();
       }
 
-      var billingAddress = basket.billingAddress;
+      const billingAddress = basket.billingAddress;
       if (billingAddress && ucpBasket.buyer.full_name) {
-        var nameParts = ucpBasket.buyer.full_name.split(' ');
-        var firstName = nameParts[0] || 'Guest';
-        var lastName = nameParts.slice(1).join(' ') || '';
+        const nameParts = ucpBasket.buyer.full_name.split(' ');
+        const firstName = nameParts[0] || 'Guest';
+        const lastName = nameParts.slice(1).join(' ') || '';
 
         billingAddress.setFirstName(firstName);
         billingAddress.setLastName(lastName);
@@ -1210,21 +1288,36 @@ function populateBasketFromUCPBasket(basket, ucpBasket) {
         try {
           basket.createCouponLineItem(code, true);
         } catch (e) {
-          var errorMessage = e instanceof Error ? e.message : String(e);
+          const errorMessage = e instanceof Error ? e.message : String(e);
           logger.warn('Failed to apply coupon code {0}: {1}', code, errorMessage);
         }
       });
     }
 
-    // Handle fulfillment (shipping)
+    let shipment = null;
+
+    // Handle fulfillment (shipping or pickup)
     if (ucpBasket.fulfillment && ucpBasket.fulfillment.methods && ucpBasket.fulfillment.methods.length > 0) {
       ucpBasket.fulfillment.methods.forEach(function (method) {
-        if (method.type === 'shipping') {
-          var shipment = basket.defaultShipment;
+        if (method.type === 'pickup') {
+          // Store pickup — use the selected destination (store ID) to apply pickup
+          if (method.selected_destination_id) {
+            var StoreMgr = require('dw/catalog/StoreMgr');
+            var store = StoreMgr.getStore(method.selected_destination_id);
+
+            if (store) {
+              shipment = basket.defaultShipment;
+              applyStorePickupToShipment(basket, shipment, store);
+            } else {
+              logger.warn('Store not found for pickup destination: {0}', method.selected_destination_id);
+            }
+          }
+        } else if (method.type === 'shipping') {
+          shipment = basket.defaultShipment;
 
           // Set shipping address if destination is selected
           if (method.selected_destination_id && method.destinations) {
-            var selectedDestination = method.destinations.find(function (dest) {
+            const selectedDestination = method.destinations.find(function (dest) {
               return dest.id === method.selected_destination_id;
             });
 
@@ -1233,7 +1326,7 @@ function populateBasketFromUCPBasket(basket, ucpBasket) {
                 shipment.createShippingAddress();
               }
 
-              var shippingAddress = shipment.shippingAddress;
+              const shippingAddress = shipment.shippingAddress;
               if (shippingAddress) {
                 if (selectedDestination.street_address) {
                   shippingAddress.setAddress1(selectedDestination.street_address);
@@ -1267,13 +1360,13 @@ function populateBasketFromUCPBasket(basket, ucpBasket) {
           if (method.groups && method.groups.length > 0) {
             method.groups.forEach(function (group) {
               if (group.selected_option_id) {
-                var ShippingMgr = require('dw/order/ShippingMgr');
-                var allMethods = ShippingMgr.getAllShippingMethods();
-                var shippingMethod = null;
+                const ShippingMgr = require('dw/order/ShippingMgr');
+                let allMethods = ShippingMgr.getAllShippingMethods();
+                let shippingMethod = null;
 
-                var methodsIterator = allMethods.iterator();
+                let methodsIterator = allMethods.iterator();
                 while (methodsIterator.hasNext()) {
-                  var methodItem = methodsIterator.next();
+                  let methodItem = methodsIterator.next();
                   if (methodItem.ID === group.selected_option_id) {
                     shippingMethod = methodItem;
                     break;
@@ -1323,5 +1416,6 @@ module.exports = {
   assignDestinationIds: assignDestinationIds,
   getCustomerAddressBookDestinations: getCustomerAddressBookDestinations,
   getFulfillmentAddresses: getFulfillmentAddresses,
-  applyDestinationToShipment: applyDestinationToShipment
+  applyDestinationToShipment: applyDestinationToShipment,
+  applyStorePickupToShipment: applyStorePickupToShipment
 };
